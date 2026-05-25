@@ -7,10 +7,10 @@ COPY package.json ./
 RUN npm install
 
 # העתקת קוד השרת
-COPY server.js ./
+COPY . .
 
 # יצירת התיקייה שבה יישמר קובץ ה-JSON
-RUN mkdir data
+RUN mkdir -p data
 
 EXPOSE 3500
 

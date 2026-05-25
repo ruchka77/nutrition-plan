@@ -8,6 +8,8 @@ const dataPath = path.join(__dirname, 'data', 'db.json');
 
 app.use(express.json());
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 // פונקציית עזר לקריאת הנתונים
 const readData = () => {
     if (!fs.existsSync(dataPath)) return [];
