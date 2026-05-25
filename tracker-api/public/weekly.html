@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"><title>מעקב שבועי</title></head>
+<body>
+    <h1>יומן אכילה שבועי</h1>
+    <div id="mealsList"></div>
+    <script>
+        fetch('/api/meals')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('mealsList');
+                data.forEach(m => {
+                    list.innerHTML += `<p>${m.name} - ${m.weight} גרם</p>`;
+                });
+            });
+    </script>
+</body>
+</html>

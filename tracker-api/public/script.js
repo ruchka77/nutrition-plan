@@ -83,3 +83,19 @@ async function renderLogs() {
         container.appendChild(el);
     });
 }
+
+async function saveMeal() {
+    const meal = {
+        type: document.getElementById('mealSelect').value,
+        name: document.getElementById('foodName').value,
+        weight: document.getElementById('foodWeight').value,
+        date: new Date().toISOString()
+    };
+
+    await fetch('/api/meals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(meal)
+    });
+    alert('הארוחה נשמרה!');
+}
