@@ -1,18 +1,372 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head><meta charset="UTF-8"><title>מעקב שבועי</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>You VS You - מעקב שבועי</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #fdfdfd; 
+            margin: 0; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 40px; 
+            border: 5px dashed #c0392b; 
+            position: relative; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        
+        .nav-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .nav-link:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        h1 { 
+            font-size: 36px; 
+            margin: 20px 0; 
+            color: #2c3e50; 
+            font-weight: bold; 
+        }
+        
+        h1 span {
+            color: #e74c3c;
+            font-size: 28px;
+        }
+        
+        .summary-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+            border: 3px solid #e74c3c;
+            border-radius: 15px;
+            padding: 20px 30px;
+            min-width: 200px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .summary-box .label {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .summary-box .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #c0392b;
+        }
+        
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            font-size: 16px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+            margin: 30px 0;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        }
+        
+        th { 
+            background-color: transparent;
+            font-weight: bold; 
+            border: none;
+            padding: 18px; 
+            color: white; 
+            font-size: 18px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        td { 
+            border: 1px solid #e0e0e0; 
+            padding: 15px; 
+            text-align: center; 
+            color: #444; 
+            font-size: 16px;
+        }
+        
+        .day-cell {
+            font-weight: bold;
+            background-color: #f4f4f4;
+            color: #2c3e50;
+            font-size: 17px;
+        }
+        
+        .meal-cell {
+            background-color: #fdfdfd;
+        }
+        
+        .meal-item {
+            margin: 5px 0;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            font-size: 14px;
+            border-right: 3px solid #e74c3c;
+        }
+        
+        .meal-item strong {
+            color: #c0392b;
+        }
+        
+        .meal-item.protein {
+            border-right-color: #e74c3c;
+        }
+        
+        .meal-item.carbs {
+            border-right-color: #f39c12;
+        }
+        
+        tr:hover td {
+            background-color: #fff9f8;
+        }
+        
+        .empty-day {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .footer-note {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-right: 5px solid #e74c3c;
+            margin-top: 30px;
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .footer-note strong {
+            color: #c0392b;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 18px;
+        }
+        
+        .error {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+            padding: 20px;
+            border-radius: 8px;
+            color: #c0392b;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .summary-boxes {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
 <body>
-    <h1>יומן אכילה שבועי</h1>
-    <div id="mealsList"></div>
+    <div class="container">
+        <a href="index.html" class="nav-link">⬅️ חזרה לתפריט</a>
+        
+        <h1>📊 מעקב שבועי</h1>
+        <h1><span id="weekRange"></span></h1>
+        
+        <div class="summary-boxes">
+            <div class="summary-box">
+                <div class="label">סך הכל ארוחות</div>
+                <div class="value" id="totalMeals">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">ממוצע יומי</div>
+                <div class="value" id="avgMeals">0</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>יום</th>
+                    <th>תאריך</th>
+                    <th>ארוחות חלבון</th>
+                    <th>ארוחות פחמימה</th>
+                </tr>
+            </thead>
+            <tbody id="weeklyTable">
+                <tr>
+                    <td colspan="4" class="loading">טוען נתונים מהשרת...</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer-note">
+            <strong>💡 טיפ:</strong> הנתונים נשמרים אוטומטית בשרת. המשיכי לתעד כל ארוחה כדי לעקוב אחר ההתקדמות!
+        </div>
+    </div>
+
     <script>
-        fetch('/api/meals')
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById('mealsList');
-                data.forEach(m => {
-                    list.innerHTML += `<p>${m.name} - ${m.weight} גרם</p>`;
-                });
+        const API_URL = '/api/meals';
+        
+        // חישוב השבוע הנוכחי (ראשון עד שבת)
+        function getWeekRange() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Sunday
+            const start = new Date(today);
+            start.setDate(today.getDate() - dayOfWeek);
+            start.setHours(0, 0, 0, 0);
+            
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            end.setHours(23, 59, 59, 999);
+            
+            return { start, end };
+        }
+
+        // פורמט תאריך לעברית
+        function formatDate(date) {
+            return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+        }
+
+        // שמות הימים בעברית
+        const dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+
+        // סינון ארוחות לפי טווח תאריכים
+        function filterMealsByWeek(meals, weekStart, weekEnd) {
+            return meals.filter(meal => {
+                const mealDate = new Date(meal.date);
+                return mealDate >= weekStart && mealDate <= weekEnd;
             });
+        }
+
+        // קיבוץ ארוחות לפי יום
+        function groupMealsByDay(meals) {
+            const grouped = {};
+            meals.forEach(meal => {
+                const date = new Date(meal.date).toDateString();
+                if (!grouped[date]) {
+                    grouped[date] = { protein: [], carbs: [] };
+                }
+                if (meal.type === 'חלבון') {
+                    grouped[date].protein.push(meal);
+                } else {
+                    grouped[date].carbs.push(meal);
+                }
+            });
+            return grouped;
+        }
+
+        // יצירת תוכן טבלה
+        async function renderWeeklyTable() {
+            const tbody = document.getElementById('weeklyTable');
+            
+            try {
+                // שליפת נתונים מהשרת
+                const response = await fetch(API_URL);
+                const allMeals = await response.json();
+                
+                const { start, end } = getWeekRange();
+                const weekMeals = filterMealsByWeek(allMeals, start, end);
+                const groupedMeals = groupMealsByDay(weekMeals);
+                
+                // עדכון טווח שבועי
+                document.getElementById('weekRange').textContent = 
+                    `${formatDate(start)} - ${formatDate(end)}`;
+                
+                tbody.innerHTML = '';
+                
+                let totalMeals = 0;
+                
+                // יצירת שורה לכל יום בשבוע
+                for (let i = 0; i < 7; i++) {
+                    const currentDay = new Date(start);
+                    currentDay.setDate(start.getDate() + i);
+                    const dayKey = currentDay.toDateString();
+                    const dayData = groupedMeals[dayKey] || { protein: [], carbs: [] };
+                    
+                    totalMeals += dayData.protein.length + dayData.carbs.length;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="day-cell">${dayNames[i]}</td>
+                        <td class="day-cell">${formatDate(currentDay)}</td>
+                        <td class="meal-cell">
+                            ${dayData.protein.length > 0 
+                                ? dayData.protein.map(m => 
+                                    `<div class="meal-item protein"><strong>${m.name}</strong> - ${m.weight}g</div>`
+                                  ).join('')
+                                : '<span class="empty-day">לא נרשמו ארוחות</span>'
+                            }
+                        </td>
+                        <td class="meal-cell">
+                            ${dayData.carbs.length > 0 
+                                ? dayData.carbs.map(m => 
+                                    `<div class="meal-item carbs"><strong>${m.name}</strong> - ${m.weight}g</div>`
+                                  ).join('')
+                                : '<span class="empty-day">לא נרשמו ארוחות</span>'
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+                
+                // עדכון סיכום
+                document.getElementById('totalMeals').textContent = totalMeals;
+                document.getElementById('avgMeals').textContent = (totalMeals / 7).toFixed(1);
+                
+            } catch (error) {
+                console.error('Error fetching meals:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="error">
+                            ⚠️ שגיאה בטעינת הנתונים מהשרת. אנא נסי שוב מאוחר יותר.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // טעינה ראשונית
+        renderWeeklyTable();
+        
+        // רענון אוטומטי כל דקה
+        setInterval(renderWeeklyTable, 60000);
     </script>
 </body>
 </html>
