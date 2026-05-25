@@ -53,7 +53,7 @@ async function saveMeal() {
     };
 
     try {
-        await fetch('/api/meals', {
+        const response = await fetch('/api/meals', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -62,6 +62,23 @@ async function saveMeal() {
             body: JSON.stringify(meal)
         });
         
+        // --- התוספת החשובה מתחילה כאן ---
+        
+        // אם השרת אומר שהטוקן לא חוקי או פג תוקף
+        if (response.status === 401) {
+            alert('⚠️ החיבור שלך פג תוקף (עברה שעה). אנא התחבר מחדש.');
+            localStorage.removeItem('google_token'); // מוחקים את הטוקן הישן
+            window.location.reload(); // מרעננים את העמוד כדי שהמשתמש יוכל להתחבר שוב
+            return;
+        }
+
+        // אם יש שגיאה אחרת מהשרת
+        if (!response.ok) {
+            throw new Error(`Server Error: ${response.status}`);
+        }
+        
+        // --- התוספת החשובה מסתיימת כאן ---
+
         alert(`✅ הארוחה נשמרה בהצלחה!\n${mealType}: ${foodName} - ${foodWeight}g`);
         
         document.getElementById('foodName').value = '';
