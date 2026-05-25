@@ -108,6 +108,6 @@ app.delete('/api/meals/:id', verifyUser, async (req, res) => {
 // ---------------------------------------------------------
 // 5. START SERVER
 // ---------------------------------------------------------
-app.listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
-});
+
+// Export the Express API for Vercel's serverless environment
+module.exports = app;
