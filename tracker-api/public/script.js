@@ -1,95 +1,40 @@
 const API_URL = '/api/meals';
 
-// פונקציה לשליפת הנתונים מהשרת
-async function fetchLogs() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        return [];
-    }
-}
+// שולפים את הטוקן מהזיכרון של הדפדפן אם הוא קיים
+let googleToken = localStorage.getItem('google_token');
 
-// עדכון פונקציית שמירת הארוחה
-async function saveEntry() {
-    const amount = document.getElementById('inputAmount').value;
-    if (!amount || amount <= 0) return alert("אנא הזן כמות תקינה");
-
-    const newEntry = {
-        id: Date.now(),
-        day: parseInt(document.getElementById('inputDay').value),
-        meal: document.getElementById('inputMeal').value,
-        category: document.getElementById('inputCategory').value,
-        food: document.getElementById('inputFood').value,
-        amount: amount
-    };
-    
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEntry)
+window.onload = function () {
+    // אתחול מערכת ההתחברות של גוגל
+    google.accounts.id.initialize({
+        client_id: "82942474093-6eppuqvpc5aqcqlvgg80aispn39jm44d.apps.googleusercontent.com", // <--- הדבק את ה-Client ID שלך כאן!
+        callback: handleCredentialResponse
     });
     
-    currentViewDay = newEntry.day;
-    renderFilters();
-    renderLogs();
-}
+    // ציור הכפתור
+    google.accounts.id.renderButton(
+        document.getElementById("buttonDiv"),
+        { theme: "filled_black", size: "large", shape: "pill" } // עיצוב שחור שמתאים לאתר שלך
+    );
+};
 
-// עדכון פונקציית המחיקה
-async function deleteEntry(id) {
-    await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
-    });
-    renderLogs();
-}
-
-// עדכון רינדור הלוגים (עובד כעת בצורה אסינכרונית מול השרת)
-async function renderLogs() {
-    const container = document.getElementById('logsContainer');
-    container.innerHTML = '<div style="text-align:center; padding:20px;">טוען נתונים מהשרת...</div>';
-    
-    let db = await fetchLogs();
-    const dayLogs = db.filter(entry => entry.day === currentViewDay);
-    
-    container.innerHTML = '';
-    
-    if (dayLogs.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">אין עדיין רישומים ליום זה.</div>';
-        return;
-    }
-
-    const mealOrder = {"בוקר":1, "צהריים":2, "ערב":3, "ביניים / לפני אימון":4};
-    dayLogs.sort((a,b) => mealOrder[a.meal] - mealOrder[b.meal]);
-
-    dayLogs.forEach(log => {
-        const el = document.createElement('div');
-        el.className = 'log-entry';
-        
-        let dotColor = '#bdc3c7';
-        if(log.category.includes('חלבון')) dotColor = '#e74c3c';
-        if(log.category.includes('פחמימה')) dotColor = '#f39c12';
-        if(log.category.includes('ירקות')) dotColor = '#27ae60';
-        if(log.category.includes('שומן')) dotColor = '#8e44ad';
-
-        el.innerHTML = `
-            <div class="log-details">
-                <strong><span style="color:${dotColor}">●</span> ${log.meal} - ${log.category}</strong>
-                <span>${log.amount} מנות | ${log.food}</span>
-            </div>
-            <button class="delete-btn" onclick="deleteEntry(${log.id})">מחק</button>
-        `;
-        container.appendChild(el);
-    });
+// פונקציה שמופעלת ברגע שהמשתמש מתחבר בהצלחה
+function handleCredentialResponse(response) {
+    googleToken = response.credential;
+    localStorage.setItem('google_token', googleToken); // שומרים את הטוקן בדפדפן
+    alert("✅ התחברת בהצלחה!");
 }
 
 async function saveMeal() {
+    // נוודא שהמשתמש מחובר לפני שהוא שומר
+    if (!googleToken) {
+        alert('❌ אנא התחבר עם גוגל לפני שמירת ארוחה');
+        return;
+    }
+
     const mealType = document.getElementById('mealSelect').value;
     const foodName = document.getElementById('foodName').value.trim();
     const foodWeight = document.getElementById('foodWeight').value;
 
-    // בדיקת תקינות
     if (!foodName) {
         alert('❌ אנא הזיני שם מנה');
         return;
@@ -100,6 +45,7 @@ async function saveMeal() {
     }
 
     const meal = {
+        id: Date.now(),
         type: mealType,
         name: foodName,
         weight: parseInt(foodWeight),
@@ -109,19 +55,21 @@ async function saveMeal() {
     try {
         await fetch('/api/meals', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${googleToken}` // שולחים את תעודת הזהות של גוגל לשרת
+            },
             body: JSON.stringify(meal)
         });
         
         alert(`✅ הארוחה נשמרה בהצלחה!\n${mealType}: ${foodName} - ${foodWeight}g`);
         
-        // ניקוי השדות
         document.getElementById('foodName').value = '';
         document.getElementById('foodWeight').value = '';
         document.getElementById('mealSelect').selectedIndex = 0;
         
     } catch (error) {
         console.error('Error saving meal:', error);
-        alert('⚠️ שגיאה בשמירת הארוחה. אנא נסי שוב.');
+        alert('⚠️ שגיאה בשמירת הארוחה. אנא ודא שהשרת רץ ושהטוקן תקין.');
     }
 }
