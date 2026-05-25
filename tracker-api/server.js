@@ -5,7 +5,6 @@ const { OAuth2Client } = require('google-auth-library');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = process.env.PORT || 3500;
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
