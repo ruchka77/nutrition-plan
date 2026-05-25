@@ -1,0 +1,11 @@
+# Secret files
+.env
+
+# Dependencies (Never upload these)
+node_modules/
+
+# Docker build logs
+*.log
+
+# If you don't want to sync your local database file to GitHub:
+data/db.json
