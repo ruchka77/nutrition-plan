@@ -9,7 +9,6 @@ const app = express();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------------------------------------------------------
 // 1. MONGODB CONNECTION
