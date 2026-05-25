@@ -85,17 +85,43 @@ async function renderLogs() {
 }
 
 async function saveMeal() {
+    const mealType = document.getElementById('mealSelect').value;
+    const foodName = document.getElementById('foodName').value.trim();
+    const foodWeight = document.getElementById('foodWeight').value;
+
+    // בדיקת תקינות
+    if (!foodName) {
+        alert('❌ אנא הזיני שם מנה');
+        return;
+    }
+    if (!foodWeight || foodWeight <= 0) {
+        alert('❌ אנא הזיני משקל תקין');
+        return;
+    }
+
     const meal = {
-        type: document.getElementById('mealSelect').value,
-        name: document.getElementById('foodName').value,
-        weight: document.getElementById('foodWeight').value,
+        type: mealType,
+        name: foodName,
+        weight: parseInt(foodWeight),
         date: new Date().toISOString()
     };
 
-    await fetch('/api/meals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(meal)
-    });
-    alert('הארוחה נשמרה!');
+    try {
+        await fetch('/api/meals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(meal)
+        });
+        
+        alert(`✅ הארוחה נשמרה בהצלחה!\n${mealType}: ${foodName} - ${foodWeight}g`);
+        
+        // ניקוי השדות
+        document.getElementById('foodName').value = '';
+        document.getElementById('foodWeight').value = '';
+        document.getElementById('mealSelect').selectedIndex = 0;
+        
+    } catch (error) {
+        console.error('Error saving meal:', error);
+        alert('⚠️ שגיאה בשמירת הארוחה. אנא נסי שוב.');
+    }
 }
