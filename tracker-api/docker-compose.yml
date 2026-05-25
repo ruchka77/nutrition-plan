@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  tracker-api:
+    build: .
+    container_name: nutrition-tracker-api
+    ports:
+      - "3500:3500"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
