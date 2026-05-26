@@ -301,3 +301,52 @@ h1 span {
         padding: 10px;
     }
 }
+
+/* עיצוב שדות הכמות במנות (למעלה) */
+.portion-input {
+    font-size: 32px;
+    font-weight: bold;
+    color: orange;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px dashed orange;
+    width: 60px;
+    text-align: center;
+    margin-top: 5px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+.portion-input:focus {
+    outline: none;
+    background-color: rgba(255,165,0,0.1);
+    border-bottom-style: solid;
+}
+
+/* עיצוב שדות הכמות בטבלאות */
+.item-input {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+    background-color: #333333;
+    color: orange;
+    border: 1px solid #555;
+    border-radius: 4px;
+    margin-left: 8px; /* מרווח מהמילה 'גרם' */
+    font-size: 16px;
+    font-weight: bold;
+}
+.item-input:focus {
+    outline: none;
+    border-color: orange;
+}
+
+/* כפתור שמירת התפריט */
+.save-settings-btn {
+    background: linear-gradient(135deg, #1e90ff 0%, #0056b3 100%); /* צבע כחול כדי להבדיל משמירת ארוחה */
+    color: white;
+    box-shadow: 0 4px 10px rgba(30, 144, 255, 0.3);
+}
+.save-settings-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    box-shadow: 0 6px 15px rgba(30, 144, 255, 0.4);
+}

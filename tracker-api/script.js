@@ -18,11 +18,102 @@ window.onload = function () {
 };
 
 // פונקציה שמופעלת ברגע שהמשתמש מתחבר בהצלחה
-function handleCredentialResponse(response) {
+// פונקציה שמופעלת ברגע שהמשתמש מתחבר בהצלחה
+async function handleCredentialResponse(response) {
     googleToken = response.credential;
-    localStorage.setItem('google_token', googleToken); // שומרים את הטוקן בדפדפן
-    alert("✅ התחברת בהצלחה!");
+    localStorage.setItem('google_token', googleToken);
+    
+    // משיכת ההגדרות האישיות מהשרת מיד לאחר ההתחברות
+    await loadMenuSettings();
+    alert("✅ התחברת בהצלחה והתפריט שלך נטען!");
 }
+
+window.onload = function () {
+    google.accounts.id.initialize({
+        client_id: "82942474093-6eppuqvpc5aqcqlvgg80aispn39jm44d.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+    });
+    
+    google.accounts.id.renderButton(
+        document.getElementById("buttonDiv"),
+        { theme: "filled_black", size: "large", shape: "pill" } 
+    );
+
+    // אם המשתמש כבר מחובר (רענון דף), נטען את ההגדרות שלו
+    if (googleToken) {
+        loadMenuSettings();
+    }
+};
+
+// פונקציה לשאיבת הגדרות התפריט מהשרת
+async function loadMenuSettings() {
+    if (!googleToken) return;
+    try {
+        const res = await fetch('/api/settings', {
+            headers: { 'Authorization': `Bearer ${googleToken}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            
+            // עדכון מנות
+            if (data.carbPortions) document.getElementById('carbPortionsInput').value = data.carbPortions;
+            if (data.proteinPortions) document.getElementById('proteinPortionsInput').value = data.proteinPortions;
+            
+            // עדכון טבלאות
+            if (data.customItems) {
+                const inputs = document.querySelectorAll('.item-input');
+                inputs.forEach(input => {
+                    const foodName = input.getAttribute('data-food');
+                    if (data.customItems[foodName]) {
+                        input.value = data.customItems[foodName];
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error loading settings:", error);
+    }
+}
+
+// פונקציה לשמירת הגדרות התפריט לשרת
+async function saveMenuSettings() {
+    if (!googleToken) {
+        alert('❌ אנא התחבר עם גוגל תחילה כדי לשמור את התפריט');
+        return;
+    }
+
+    const carbPortions = document.getElementById('carbPortionsInput').value;
+    const proteinPortions = document.getElementById('proteinPortionsInput').value;
+    
+    const customItems = {};
+    const inputs = document.querySelectorAll('.item-input');
+    inputs.forEach(input => {
+        const foodName = input.getAttribute('data-food');
+        customItems[foodName] = input.value; // שמירת משקל לפי שם המנה
+    });
+
+    try {
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${googleToken}`
+            },
+            body: JSON.stringify({ carbPortions, proteinPortions, customItems })
+        });
+        
+        if (res.ok) {
+            alert('✅ התפריט נשמר בהצלחה!');
+        } else {
+            alert('⚠️ שגיאה בשמירת התפריט');
+        }
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        alert('⚠️ שגיאה בשמירת התפריט. ודא שהשרת רץ.');
+    }
+}
+
+// ... המשך הקוד (saveMeal נשאר כפי שהוא) ...
 
 async function saveMeal() {
     // נוודא שהמשתמש מחובר לפני שהוא שומר

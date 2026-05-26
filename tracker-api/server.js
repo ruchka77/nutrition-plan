@@ -33,6 +33,18 @@ const mealSchema = new mongoose.Schema({
 const Meal = mongoose.model('Meal', mealSchema);
 
 // ---------------------------------------------------------
+// 2.5 USER MENU SETTINGS SCHEMA (How custom menus are saved)
+// ---------------------------------------------------------
+const userMenuSchema = new mongoose.Schema({
+    userEmail: { type: String, required: true, unique: true },
+    carbPortions: { type: Number, default: 4 },
+    proteinPortions: { type: Number, default: 5 },
+    customItems: { type: Map, of: Number, default: {} } // Map to store foodName: weight
+});
+
+const UserMenu = mongoose.model('UserMenu', userMenuSchema);
+
+// ---------------------------------------------------------
 // 3. GOOGLE LOGIN MIDDLEWARE
 // ---------------------------------------------------------
 async function verifyUser(req, res, next) {
@@ -104,6 +116,39 @@ app.delete('/api/meals/:id', verifyUser, async (req, res) => {
         res.status(500).json({ error: 'Failed to delete meal' });
     }
 });
+
+// GET: Fetch custom menu settings for the logged-in user
+app.get('/api/settings', verifyUser, async (req, res) => {
+    try {
+        let settings = await UserMenu.findOne({ userEmail: req.userEmail });
+        if (!settings) {
+            // Return defaults if the user hasn't saved custom settings yet
+            settings = { carbPortions: 4, proteinPortions: 5, customItems: {} };
+        }
+        res.json(settings);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+});
+
+// POST: Save or Update custom menu settings
+app.post('/api/settings', verifyUser, async (req, res) => {
+    try {
+        const { carbPortions, proteinPortions, customItems } = req.body;
+        
+        // findOneAndUpdate with {upsert: true} will create the document if it doesn't exist, or update it if it does
+        const settings = await UserMenu.findOneAndUpdate(
+            { userEmail: req.userEmail },
+            { carbPortions, proteinPortions, customItems },
+            { new: true, upsert: true }
+        );
+        
+        res.json({ message: 'Settings saved successfully', settings });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to save settings' });
+    }
+});
+
 
 // ---------------------------------------------------------
 // 5. START SERVER
