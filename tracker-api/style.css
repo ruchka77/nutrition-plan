@@ -350,3 +350,16 @@ h1 span {
     background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
     box-shadow: 0 6px 15px rgba(30, 144, 255, 0.4);
 }
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
